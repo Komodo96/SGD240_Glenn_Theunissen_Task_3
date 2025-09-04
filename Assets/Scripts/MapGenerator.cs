@@ -5,7 +5,7 @@ using UnityEngine;
 // This class handles generating the noise map and passing it to the MapDisplay for visualization
 public class MapGenerator : MonoBehaviour
 {
-    public enum DrawMode{NoiseMap, ColorMap};
+    public enum DrawMode{NoiseMap, ColorMap, Mesh};
     public DrawMode drawMode;
 
     // Dimensions of the map (width and height)
@@ -39,6 +39,10 @@ public class MapGenerator : MonoBehaviour
     // Allows manual offsetting of the noise map
     [SerializeField]
     private Vector2 offset;
+
+    public float meshHeightMultiplier;
+
+    public AnimationCurve meshHeightCurve; 
 
     // If true, updates the map automatically when parameters are changed in the editor
     public bool autoUpdate;
@@ -79,6 +83,10 @@ public class MapGenerator : MonoBehaviour
             else if (drawMode == DrawMode.ColorMap)
             {
                 display.DrawTexture(TextureGenerator.TextureFromColorMap(colorMap,mapWidth, mapHeight));
+            }
+            else if (drawMode == DrawMode.Mesh)
+            {
+                display.DrawMesh (MeshGenerator.GenerateTerrainMesh (noiseMap, meshHeightMultiplier, meshHeightCurve), TextureGenerator.TextureFromColorMap (colorMap, mapWidth, mapHeight));
             }
         }
     }
