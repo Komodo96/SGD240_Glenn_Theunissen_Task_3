@@ -5,6 +5,9 @@ using UnityEngine;
 // This class handles generating the noise map and passing it to the MapDisplay for visualization
 public class MapGenerator : MonoBehaviour
 {
+    public enum DrawMode{NoiseMap, ColorMap};
+    public DrawMode drawMode;
+
     // Dimensions of the map (width and height)
     [SerializeField]
     private int mapWidth = 100;
@@ -40,17 +43,45 @@ public class MapGenerator : MonoBehaviour
     // If true, updates the map automatically when parameters are changed in the editor
     public bool autoUpdate;
 
+    [SerializeField]
+    private TerrainType[] regions;
+
     // Generates a new noise map and displays it
     public void GenerateMap()
     {
         // Generate the noise map using the static Noise class
         float[,] noiseMap = Noise.GenerateNoiseMap(mapWidth, mapHeight, seed, noiseScale, octaves, persistence, lacunarity, offset);
 
-        // Find the MapDisplay in the scene and draw the noise map
-        MapDisplay display = FindObjectOfType<MapDisplay>();
-        display.DrawNoiseMap(noiseMap);
-    }
+        Color[] colorMap = new Color[mapWidth * mapHeight];
+        for (int y = 0; y < mapHeight; y++)
+        {
+            for (int x = 0; x < mapWidth; x++)
+            {
+                float currentHeight = noiseMap[x, y];
 
+                for (int i = 0; i < regions.Length; i++)
+                {
+                    if (currentHeight <= regions[i].height)
+                    {
+                        colorMap[y * mapWidth + x] = regions[i].color;
+                        break;
+                    }
+                }
+            }
+
+
+            // Find the MapDisplay in the scene and draw the noise map
+            MapDisplay display = FindObjectOfType<MapDisplay>();
+            if (drawMode == DrawMode.NoiseMap)
+            {
+                display.DrawTexture(TextureGenerator.TextureFromHeightMap(noiseMap));
+            }
+            else if (drawMode == DrawMode.ColorMap)
+            {
+                display.DrawTexture(TextureGenerator.TextureFromColorMap(colorMap,mapWidth, mapHeight));
+            }
+        }
+    }
     // Validates inputs to ensure they stay within reasonable ranges
     private void OnValidate()
     {
@@ -70,5 +101,15 @@ public class MapGenerator : MonoBehaviour
         {
             octaves = 0; // Number of octaves cannot be negative
         }
+    }
+
+    [System.Serializable]
+    public struct TerrainType
+    {
+        public float height;
+
+        public Color color;
+    
+        public string name;
     }
 }
