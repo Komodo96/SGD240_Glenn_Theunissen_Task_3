@@ -18,7 +18,7 @@ public class MapGeneratorEditor : Editor
             // If any value was changed in the inspector and autoUpdate is true, regenerate the map
             if (mapGen.autoUpdate)
             {
-                mapGen.GenerateMap();
+                mapGen.DrawMapInEditor();
             }
         }
 
@@ -26,7 +26,7 @@ public class MapGeneratorEditor : Editor
         if (GUILayout.Button("Generate"))
         {
             // When clicked, call GenerateMap to update the map
-            mapGen.GenerateMap();
+            mapGen.DrawMapInEditor();
         }
     }
 }
