@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu()]
-public class TerrainData : UpdateableData
+public class TerrainData : UpdatableData
 {
     public float uniformScale = 2.5f;
 
