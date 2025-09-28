@@ -26,6 +26,7 @@ public class NoiseData : UpdatableData
     // Allows manual offsetting of the noise map
     public Vector2 offset;
 
+#if UNITY_EDITOR
     protected override void OnValidate()
     {
         if (lacunarity < 1)
@@ -38,5 +39,7 @@ public class NoiseData : UpdatableData
         }
         base.OnValidate();
     }
+
+#endif
 
 }
