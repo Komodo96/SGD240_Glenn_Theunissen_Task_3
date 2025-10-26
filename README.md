@@ -1,64 +1,36 @@
 # SGD240_Glenn_Theunissen_Task_3
-Introduction 
 
-For this course I set out to develop and implement a Procedurally Generated system that could create countless unique landmass variations with different regions present in each one. I worked in Unity using a seeded base with Perlin noise and customisable parameters that allow a great deal of flexibility and control within the editor. PCG was chosen as it represents a strong balance between game design creativity and technical problem solving. I adopted an Agile-Inspired workflow for this task and structured my development of this project into roughly two-week sprints. Each of these sprints focused on refining and expanding the project in terms of complexity and function. This required rigorous testing of design features and implementing solutions effectively and efficiently. I chose GitHub as a version control system and by frequently committing changes to the project when new milestones were reached, I was able to track changes, reflect on mistakes, manage refinements and ensure that my work could be accessed and reproduced easily. My primary learning resource was Sebastian Lague’s Procedural Landmass Generation playlist on YouTube (Lague, 2017). His breakdown of Perlin noise, octaves, persistence, and lacunarity provided both theoretical grounding and practical guidance. This resource was invaluable for demonstrating the functionality and structure of this PCG system and how I could flesh out the backbone of my creative artefact for Task 3. The following journal documents my development process across four sprints, reflecting on both successes and challenges. Each section outlines the specific tasks I completed, the commits associated with them, and how my understanding of procedural generation and Unity evolved through refinement and testing. The journal also highlights the design decisions made to ensure the terrain generator serves as a complete and functional system for a game prototype. 
+# Procedural Terrain Generation System - README
 
-Sprint 1 
+## Overview
 
-The first sprint involved setting up the project in Unity and getting the repository in GitHub functioning correctly. I made sure to test this by making a fresh commit once the project had been successfully set up and ready to start working on code. I checked the repository on GitHub and once I saw the changes I made were coming through, I began setting up the basic Perlin Noise generator by following Sebastian Lague’s videos on PCG. I accomplished this by adding in a terrain asset which would serve as a flat plan that could be manipulated through Perlin Noise. I started with a Terrain Generator script which handled setting up a random generated seed, creating a 2D array of height values and converting co-ordinates on the terrain to Perlin Noise Values. Unity was the correct choice for working on this project because it has a built in Mathf function for handling Perlin Noise generation which saves a lot of time.   
+This project implements a **procedural terrain generation system** in Unity using Perlin noise and customizable parameters for scale, height, and regions. The system dynamically generates landmasses with unique features each time, providing infinite variation for gameplay environments.
 
-![(Screenshot 2025-09-28 182843.png)](https://github.com/Komodo96/SGD240_Glenn_Theunissen_Task_3/blob/main/Screenshot%202025-09-28%20182843.png)
+## Key Features
 
-Once this Perlin noise map had been generated it is then rendered as a texture. I ended up changing the name of this script to Map Generator to more accurately depict its purpose. 
+* **Procedural Mesh Generation:** Uses Perlin noise to generate realistic terrain heightmaps.
+* **Dynamic Level of Detail (LOD):** Reduces mesh complexity at distance for better performance.
+* **Falloff Map Integration:** Smooths terrain edges to create island-like formations.
+* **ScriptableObject-Based Configuration:** Modular data-driven design using `TerrainData`, `NoiseData`, and `TextureData` for easy tuning in the Unity Editor.
+* **Auto-Update System:** Terrain updates in real-time when parameters are modified in the editor.
 
-![(Screenshot 2025-08-28 104714.png)](https://github.com/Komodo96/SGD240_Glenn_Theunissen_Task_3/blob/main/Screenshot%202025-08-28%20104714.png)
+## Technical Implementation
 
-To see these changes in real time, a custom in editor script was also created called, Map Generator Editor and this would be extremely useful as I could test for functionality in the editor while also tweaking values to see how exactly they made changes to the terrain mesh. I also added different ways that the Perlin noise map could be changed by adding parameters for octaves, lacunarity and persistence. These change the level of detail and how gradually the values of the noise map change over time which creates smoother yet more detailed terrain. 
+* Implemented with **custom mesh generation** using vertex height modification and a blend of **height curves** and **multipliers**.
+* Uses **C# events** to handle updates efficiently (`OnValuesUpdated`).
+* Includes options for **flat shading** vs. **smooth shading** to vary the visual style.
+* Designed for **runtime expansion**, allowing future systems like tree and rock spawning based on terrain height.
 
-![(Screenshot 2025-08-28 135114.png)](https://github.com/Komodo96/SGD240_Glenn_Theunissen_Task_3/blob/main/Screenshot%202025-08-28%20135114.png)
+## Experimentation and Design Process
 
-Sprint 2 
+* Tested different **Perlin noise frequencies, amplitudes, and seed values** to produce natural variations.
+* Experimented with **falloff strength and mesh height curves** to balance flat and mountainous regions.
+* Planned future feature: **ProceduralObjectSpawner** that instantiates prefabs (trees, rocks, etc.) based on terrain height and biome rules.
 
-For the second sprint I began working on implementing different regions to the map which could be distinguished through their names, colours and height values. These properties were defined through a struct. Instead of setting the texture through the Map Display class, we now have a texture generator script which handles creating a 2D texture from a height map which is a bit neater and makes more sense than having it in the map display class. This texture generator handles how colours are stored in an array and assigns them to each value in the noise map. In the map generator class, there is now added functionality for displaying different draw modes whether they be from the noise map or colour map.   
+## Future Improvements
 
-![(Screenshot 2025-09-28 191411.png)](https://github.com/Komodo96/SGD240_Glenn_Theunissen_Task_3/blob/main/Screenshot%202025-09-28%20191411.png) 
+* Implement runtime **object spawning** (trees, rocks, foliage) tied to terrain generation.
+* Add **biome blending** for desert, grassland, and snow regions.
 
-At this stage I was ready to begin working on adding a mesh to the generated map that would sculpt out the terrain features and give it a 3D appearance. I created a mesh generator script which stores our mesh data in an array and then generates vertices, triangles and a UV Map for texture application. The calculations for how these triangle indices are rendered involved a lot of math that admittedly flew over my head a bit so I was glad to have the Sebastain Lague video as a tutorial for how this could be achieved.
-
-![(Screenshot 2025-09-28 200034.png)](https://github.com/Komodo96/SGD240_Glenn_Theunissen_Task_3/blob/main/Screenshot%202025-09-28%20200034.png)
-
-A mesh height multiplier was used to make the terrain not look so flat simply by multiplying specific values in the map generator. This however made the water level which was the lowest sink even deeper which did not look natural at all. This was fixed with a mesh height curve which helped to influence the amount the mesh height multiplier influenced the terrain. To end this sprint, I added some basic LOD functionality which could reduce the number of vertices for generated chunks that would be far away from the player. These chunks did not need to be as detailed as the ones closest to the player so they could be adjusted to help improve performance and resource intensiveness of the map.  
-
-![(Screenshot 2025-09-18 142306.png)](https://github.com/Komodo96/SGD240_Glenn_Theunissen_Task_3/blob/main/Screenshot%202025-09-18%20142306.png)
-
-Sprint 3 
-
-The Level of Detail functionality of the project needed some refinement so that’s where I began for the third sprint. I introduced and Endless Terrain script which only spawns in chunks that will be visible to the player. As the player moves around the map, these chunks will either remain visible or become invisible based on proximity. This combined with LOD meshes introduced in the last sprint will help with performance for large map generation. This script also tracks chunk coordinates and prevents duplicates ensuring that the map remains coherent as the player moves around. I ran into a few issues during this section. The first being that seams were clearly visible between different chunks and the second that the tallest sections of the map were appearing as the wrong colour. The minimum and maximum noise height was slightly different between chunks which resulted in noticeable seams appearing between them. I resolved this by normalising the values that were being generated which helped to prevent the tops of mountains appearing black and got rid of the seams between chunks.  
-
-![(Screenshot 2025-09-28 204157.png)](https://github.com/Komodo96/SGD240_Glenn_Theunissen_Task_3/blob/main/Screenshot%202025-09-28%20204157.png)
-
-I then added options for a flat shading effect on the terrain and a falloff map which makes the values for the noise map and generated terrain decrease as they get closer to the edges of the map chunk which looks much more natural and realistic than the random formations of landmass we had before.  
-
-![(Screenshot 2025-09-25 103522.png)](https://github.com/Komodo96/SGD240_Glenn_Theunissen_Task_3/blob/main/Screenshot%202025-09-25%20103522.png)
-
-Finally, I downloaded an FPS controller from the Unity store which allowed me to walk around the map and test how things would look to the player in first person. (Unity Technologies, 2024) This was more painful than it had to be as when I first tried to import this package to my project without the unnecessary features such as the mobile game scripts etc, it broke my project and caused a lot of errors that prevented me from compiling code successfully. I fixed this by removing the package and importing the whole thing for the time being as it will serve its purpose for testing in its current state.  
-
-Sprint 4 
-
-To further conserve resources, I implemented a feature where only the closest chunk to the player would generate a collision mesh. This is done simply by checking the LOD for a particular mesh and then assigning the collision mesh based on if it meets a certain level of detail which saves quite a lot of performance. In preparation for importing textures, I changed how data for the terrain, noise and texture was being stored by separating them into their own scripts, rather than having them in the map generator script. The terrain shader implementation was also enhanced and uses Shader Lab language for its function. This has the downside of errors not being shown in visual studio in the same way C++ was, so I had to be extra vigilant when following Lague’s tutorial. This replaced the old implementation of regions that could be denoted by specific colours at set heights and even has a blend feature which allows for a smooth transition between textures. Once I had imported the textures that Mr Lague had kindly provided with his tutorial, I had some trouble getting my map to show any sort of colour let alone texture among the different regions. After a while of scanning code to make sure I hadn’t made any mistakes I realised the null error exceptions I was getting was due to the fact that each relevant field in the editor had to be filled with a texture otherwise it simply wouldn't work and also the height values had to be much lower to actually show up on the mesh.  At this point the map is looking quite polished with all the options in the editor allowing for a great deal of customisation and variation for generated terrain. I can confidently say that no two generated seeds would yield the same results. 
-
-![(Screenshot 2025-09-28 211416.png)](https://github.com/Komodo96/SGD240_Glenn_Theunissen_Task_3/blob/main/Screenshot%202025-09-28%20211416.png)
-
-Conclusion 
-
-This project resulted in a working procedural landmass generator capable of producing unique, reproducible terrains using seeded Perlin noise, octaves, and customizable parameters. My sprints followed an iterative process from simple heightmaps to textured, mesh-based terrains with level of detail and performance optimisations. My GitHub commits tracked this progression, outlining the process, debugging and refinement of the development.   
-
-The generator now offers flexible tools for game design, with adjustable noise settings, falloff maps, regions, and texture blending. While future improvements, such as bug fixes and refactoring remain, I’d also like to look at how I could begin introducing the hand-crafted elements I talked about in Task 1, possibly looking at how rocks and foliage could make my maps look even more polished. Nevertheless, it serves as a strong foundation for my Task 3 artefact. Overall, this project strengthened both my technical understanding of Unity and my ability to plan, document, and reflect through an Agile, sprint-based workflow.  
-
- 
-References 
-
- 
-Lague, S. (Director). (2016). Procedural Landmass Generation. Available from https://www.youtube.com/watch?v=wbpMiKiSKm8&list=PLFt_AvWsXl0eBW2EiBtl_sxmDtSgZBxB3&index=2 
 
 Unity Technologies. (2024, September 11). Starter Assets - FirstPerson. Retrieved September 24, 2025, from Unity.com website: https://assetstore.unity.com/packages/essentials/starter-assets-firstperson-updates-in-new-charactercontroller-pa-196525 
