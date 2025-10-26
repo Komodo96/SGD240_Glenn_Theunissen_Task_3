@@ -31,6 +31,3 @@ This project implements a **procedural terrain generation system** in Unity usin
 
 * Implement runtime **object spawning** (trees, rocks, foliage) tied to terrain generation.
 * Add **biome blending** for desert, grassland, and snow regions.
-
-
-Unity Technologies. (2024, September 11). Starter Assets - FirstPerson. Retrieved September 24, 2025, from Unity.com website: https://assetstore.unity.com/packages/essentials/starter-assets-firstperson-updates-in-new-charactercontroller-pa-196525 
