@@ -4,35 +4,38 @@ using UnityEngine;
 
 public static class TextureGenerator
 {
+    // Creates a texture from a given color map
     public static Texture2D TextureFromColorMap(Color[] colorMap, int width, int height)
     {
         Texture2D texture = new Texture2D(width, height);
-        texture.filterMode = FilterMode.Point;
-        texture.wrapMode = TextureWrapMode.Clamp; 
-        texture.SetPixels(colorMap);
-        texture.Apply();
+        texture.filterMode = FilterMode.Point;       // Keeps sharp pixel edges
+        texture.wrapMode = TextureWrapMode.Clamp;    // Prevents texture tiling
+        texture.SetPixels(colorMap);                 // Assign all color values
+        texture.Apply();                             // Apply changes to the texture
         return texture;
     }
 
-    public static Texture2D TextureFromHeightMap(float[,] heightMap) 
+    // Creates a grayscale texture from a 2D heightmap
+    public static Texture2D TextureFromHeightMap(float[,] heightMap)
     {
-        int width = heightMap.GetLength(0);  // Get width of the noise map (first dimension)
-        int height = heightMap.GetLength(1); // Get height of the noise map (second dimension)
+        int width = heightMap.GetLength(0);   // Width of the map
+        int height = heightMap.GetLength(1);  // Height of the map
 
-        // Prepare a 1D array of colors to assign to the texture
+        // Create an array of colors for the texture
         Color[] colorMap = new Color[width * height];
 
-        // Loop through each value in the noise map
+        // Loop through every point in the heightmap
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                // Interpolate between black (0) and white (1) based on the noise value
+                // Map height value (0–1) to a color between black and white
                 colorMap[y * width + x] = Color.Lerp(Color.black, Color.white, heightMap[x, y]);
             }
         }
 
+        // Generate texture from the color map
         return TextureFromColorMap(colorMap, width, height);
-
     }
 }
+

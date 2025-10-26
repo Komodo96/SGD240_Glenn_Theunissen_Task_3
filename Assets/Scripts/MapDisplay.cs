@@ -2,28 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// This class is responsible for taking a 2D noise map and displaying it visually
+// Handles displaying the generated terrain — either as a texture or a mesh
 public class MapDisplay : MonoBehaviour
 {
     public Renderer textureRenderer;
     public MeshFilter meshFilter;
     public MeshRenderer meshRenderer;
 
-    // Draws a grayscale texture based on the noise map
+    // Displays a noise map as a simple 2D grayscale texture
     public void DrawTexture(Texture2D texture)
     {
-
-        // Assign the texture to the Renderer’s material
+        // Apply the texture to the material
         textureRenderer.sharedMaterial.mainTexture = texture;
 
-        // Scale the Renderer to match the texture dimensions (for correct visual proportions)
+        // Adjust the plane’s scale to match the texture dimensions
         textureRenderer.transform.localScale = new Vector3(texture.width, 1, texture.height);
     }
 
+    // Displays a 3D terrain mesh using the provided mesh data
     public void DrawMesh(MeshData meshData)
     {
+        // Create and assign the generated mesh
         meshFilter.sharedMesh = meshData.CreateMesh();
 
-        meshFilter.transform.localScale = Vector3.one * FindObjectOfType<MapGenerator> ().terrainData.uniformScale; 
+        // Scale the mesh based on the terrain’s global uniform scale setting
+        meshFilter.transform.localScale = Vector3.one * FindObjectOfType<MapGenerator>().terrainData.uniformScale;
     }
 }
+

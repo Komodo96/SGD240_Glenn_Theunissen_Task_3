@@ -2,17 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Used to hide objects in the scene when the play button is pressed
 public class HideOnPlay : MonoBehaviour
 {
-    // Start is called before the first frame update
     void Start()
     {
         gameObject.SetActive(false);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

@@ -4,39 +4,45 @@ using UnityEngine;
 
 public static class MeshGenerator
 {
+    // Supported LODs and chunk sizes. Determines how detailed the terrain mesh can be.
     public const int numSupportedLODs = 5;
     public const int numSupportedChunkSizes = 9;
     public const int numSupportedFlatShadedChunkSizes = 3;
-    public static readonly int[] supportedChunkSizes = {48, 72, 96, 120, 144, 168, 192, 216, 240};
-    public static readonly int[] supportedFlatShadedChunkSizes = {48, 72, 96};
+    public static readonly int[] supportedChunkSizes = { 48, 72, 96, 120, 144, 168, 192, 216, 240 };
+    public static readonly int[] supportedFlatShadedChunkSizes = { 48, 72, 96 };
 
     public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail, bool useFlatShading)
     {
+        // Duplicate the height curve to avoid threading issues when generating multiple meshes
         AnimationCurve heightCurve = new AnimationCurve(_heightCurve.keys);
 
+        // Determines how many vertices we skip depending on LOD (higher LOD = less detail)
         int meshSimplificationIncrement = (levelOfDetail == 0) ? 1 : levelOfDetail * 2;
 
         int borderedSize = heightMap.GetLength(0);
-        int meshSize = borderedSize - 2*meshSimplificationIncrement;
+        int meshSize = borderedSize - 2 * meshSimplificationIncrement;
         int meshSizeUnsimplified = borderedSize - 2;
 
+        // Center the mesh around (0,0)
         float topLeftX = (meshSizeUnsimplified - 1) / -2f;
         float topLeftZ = (meshSizeUnsimplified - 1) / 2f;
 
         int verticesPerLine = (meshSize - 1) / meshSimplificationIncrement + 1;
 
-        MeshData meshData = new MeshData (verticesPerLine, useFlatShading);
+        MeshData meshData = new MeshData(verticesPerLine, useFlatShading);
 
+        // Map to keep track of which vertex index corresponds to each grid coordinate
         int[,] vertexIndicesMap = new int[borderedSize, borderedSize];
         int meshVertexIndex = 0;
         int borderVertexIndex = -1;
 
+        // Assign vertex indices (negative = border vertices)
         for (int y = 0; y < borderedSize; y += meshSimplificationIncrement)
         {
             for (int x = 0; x < borderedSize; x += meshSimplificationIncrement)
             {
                 bool isBorderVertex = y == 0 || y == borderedSize - 1 || x == 0 || x == borderedSize - 1;
-                
+
                 if (isBorderVertex)
                 {
                     vertexIndicesMap[x, y] = borderVertexIndex;
@@ -49,33 +55,37 @@ public static class MeshGenerator
                 }
             }
         }
-                for (int y = 0; y < borderedSize; y+= meshSimplificationIncrement)
+
+        // Generate vertices and triangles based on height map
+        for (int y = 0; y < borderedSize; y += meshSimplificationIncrement)
         {
-            for (int x = 0; x < borderedSize; x+= meshSimplificationIncrement)
+            for (int x = 0; x < borderedSize; x += meshSimplificationIncrement)
             {
                 int vertexIndex = vertexIndicesMap[x, y];
                 Vector2 percent = new Vector2((x - meshSimplificationIncrement) / (float)meshSize, (y - meshSimplificationIncrement) / (float)meshSize);
                 float height = heightCurve.Evaluate(heightMap[x, y]) * heightMultiplier;
-                Vector3 vertexPosition = new Vector3(topLeftX + percent.x * meshSizeUnsimplified, height , topLeftZ - percent. y * meshSizeUnsimplified);
+                Vector3 vertexPosition = new Vector3(topLeftX + percent.x * meshSizeUnsimplified, height, topLeftZ - percent.y * meshSizeUnsimplified);
 
                 meshData.AddVertex(vertexPosition, percent, vertexIndex);
 
+                // Build two triangles for each grid square
                 if (x < borderedSize - 1 && y < borderedSize - 1)
                 {
-                    int a = vertexIndicesMap[x,y];
+                    int a = vertexIndicesMap[x, y];
                     int b = vertexIndicesMap[x + meshSimplificationIncrement, y];
                     int c = vertexIndicesMap[x, y + meshSimplificationIncrement];
                     int d = vertexIndicesMap[x + meshSimplificationIncrement, y + meshSimplificationIncrement];
-                    meshData.AddTriangle(a,d,c);
-                    meshData.AddTriangle(d,a,b);
+                    meshData.AddTriangle(a, d, c);
+                    meshData.AddTriangle(d, a, b);
                 }
 
                 vertexIndex++;
             }
         }
 
+        // Finalize mesh data (apply normals or flat shading)
         meshData.ProcessMesh();
-        
+
         return meshData;
     }
 }
@@ -107,6 +117,7 @@ public class MeshData
         borderTriangles = new int[24 * verticesPerLine];
     }
 
+    // Add a vertex to the main or border array
     public void AddVertex(Vector3 vertexPosition, Vector2 uv, int vertexIndex)
     {
         if (vertexIndex < 0)
@@ -120,6 +131,7 @@ public class MeshData
         }
     }
 
+    // Add a triangle using 3 vertex indices (supports both normal and border triangles)
     public void AddTriangle(int a, int b, int c)
     {
         if (a < 0 || b < 0 || c < 0)
@@ -138,10 +150,12 @@ public class MeshData
         }
     }
 
+    // Calculate normals for smooth shading
     Vector3[] CalculateNormals()
     {
         Vector3[] vertexNormals = new Vector3[vertices.Length];
         int triangleCount = triangles.Length / 3;
+
         for (int i = 0; i < triangleCount; i++)
         {
             int normalTriangleIndex = i * 3;
@@ -155,6 +169,7 @@ public class MeshData
             vertexNormals[vertexIndexC] += triangleNormal;
         }
 
+        // Include border triangles to smooth seams between chunks
         int borderTriangleCount = borderTriangles.Length / 3;
         for (int i = 0; i < borderTriangleCount; i++)
         {
@@ -164,20 +179,10 @@ public class MeshData
             int vertexIndexC = borderTriangles[normalTriangleIndex + 2];
 
             Vector3 triangleNormal = SurfaceNormalFromIndices(vertexIndexA, vertexIndexB, vertexIndexC);
-            if (vertexIndexA >= 0)
-            {
-                vertexNormals[vertexIndexA] += triangleNormal;
-            }
-            if (vertexIndexB >= 0)
-            {
-                vertexNormals[vertexIndexB] += triangleNormal;
-            }
-            if (vertexIndexC >= 0)
-            {
-                vertexNormals[vertexIndexC] += triangleNormal;
-            }
+            if (vertexIndexA >= 0) vertexNormals[vertexIndexA] += triangleNormal;
+            if (vertexIndexB >= 0) vertexNormals[vertexIndexB] += triangleNormal;
+            if (vertexIndexC >= 0) vertexNormals[vertexIndexC] += triangleNormal;
         }
-
 
         for (int i = 0; i < vertexNormals.Length; i++)
         {
@@ -186,6 +191,7 @@ public class MeshData
         return vertexNormals;
     }
 
+    // Calculate a triangle’s surface normal from its vertex indices
     Vector3 SurfaceNormalFromIndices(int indexA, int indexB, int indexC)
     {
         Vector3 pointA = (indexA < 0) ? borderVertices[-indexA - 1] : vertices[indexA];
@@ -197,6 +203,7 @@ public class MeshData
         return Vector3.Cross(sideAB, sideAC).normalized;
     }
 
+    // Finalize the mesh (flat or smooth shading)
     public void ProcessMesh()
     {
         if (useFlatShading)
@@ -214,6 +221,7 @@ public class MeshData
         bakedNormals = CalculateNormals();
     }
 
+    // Duplicates vertices for each face to give flat shading
     void FlatShading()
     {
         Vector3[] flatShadedVertices = new Vector3[triangles.Length];
@@ -230,6 +238,7 @@ public class MeshData
         uvs = flatShadedUvs;
     }
 
+    // Converts the MeshData into a Unity Mesh
     public Mesh CreateMesh()
     {
         Mesh mesh = new Mesh();
@@ -247,5 +256,5 @@ public class MeshData
         return mesh;
     }
 }
-    
+
 
